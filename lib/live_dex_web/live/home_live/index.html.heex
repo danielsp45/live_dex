@@ -1,0 +1,82 @@
+<div class="mx-auto max-w-9xl px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col justify-center mt-10 mx-auto max-w-3xl">
+    <div>
+      <img src="/images/pokemon.png" alt="Pokemon" class="mx-auto h-24 w-auto" />
+    </div>
+
+    <form class="mt-8" phx-submit="search">
+      <div class="flex flex-col items-center py-2">
+        <input
+          type="text"
+          id="base-input"
+          placeholder="Enter Pokemon Name or ID"
+          name="param"
+          class="border border-blue-700 text-gray-900 text-lg rounded-lg focus:ring-blue-700 focus:border-blue-700 block w-full p-2.5"
+        />
+        <button
+          type="submit"
+          class="text-white bg-blue-700 mt-4 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 focus:outline-none"
+        >
+          Search
+        </button>
+      </div>
+    </form>
+    <!-- Pokemon Card -->
+    <%= if @pokemon != nil do %>
+      <div>
+        <div class="flex flex-row justify-between items-center border-b border-gray-200 h-16">
+          <div class="flex flex-row justify-start items-center h-full">
+            <div class="ml-8 mt-2">
+              <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
+                <%= String.upcase(@pokemon.name) %>
+              </h5>
+            </div>
+            <div class="ml-4">
+              <span class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">
+                #<%= @pokemon.id %>
+              </span>
+            </div>
+          </div>
+          <div class="mr-8">
+            <img class="rounded-t-lg object-contain" src={@pokemon.sprite} alt="" />
+          </div>
+        </div>
+        <!-- Pokemon Stats -->
+        <ul id="stats" class="ml-10 mr-14 p-5">
+          <li
+            :for={{name, value} <- @pokemon.stats}
+            id={name}
+            class="flex flex-row justify-between"
+          >
+            <p class="font-semibold"><%= String.upcase(name) %>:</p>
+            <p class="ml-4"><%= value %></p>
+          </li>
+        </ul>
+      </div>
+
+      <div class="flex justify-center mt-2">
+        <button
+          phx-click="prev"
+          type="button"
+          class="py-2.5 px-5 me-2 mb-2 mr-10 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100"
+        >
+          Prev
+        </button>
+        <button
+          phx-click="next"
+          type="button"
+          class="py-2.5 px-5 me-2 mb-2 ml-10 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100"
+        >
+          Next
+        </button>
+      </div>
+    <% else %>
+      <div class="text-center mt-10">
+        <h3 class="mt-2 text-sm font-semibold text-gray-900">No result</h3>
+        <p class="mt-1 text-sm text-gray-500">
+          <%= @error %>
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>
