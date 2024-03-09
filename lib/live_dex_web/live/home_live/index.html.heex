@@ -1,21 +1,37 @@
 <div class="mx-auto max-w-9xl px-4 sm:px-6 lg:px-8">
   <div class="flex flex-col justify-center mt-10 mx-auto max-w-3xl">
-    <div>
-      <img src="/images/pokemon.png" alt="Pokemon" class="mx-auto h-24 w-auto" />
-    </div>
-
-    <form class="mt-8" phx-submit="search">
-      <div class="flex flex-col items-center py-2">
+    <form class="mx-auto mt-4 w-full md:w-3/4" phx-submit="search">
+      <label for="search" class="mb-2 text-sm font-medium text-gray-900 sr-only">
+        Search
+      </label>
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg
+            class="w-4 h-4 text-white"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 20 20"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+            />
+          </svg>
+        </div>
         <input
-          type="text"
-          id="base-input"
-          placeholder="Enter Pokemon Name or ID"
+          type="search"
+          id="search"
           name="param"
-          class="border border-blue-700 text-gray-900 text-lg rounded-lg focus:ring-blue-700 focus:border-blue-700 block w-full p-2.5"
+          class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter Pokemon Name or ID"
         />
         <button
           type="submit"
-          class="text-white bg-blue-700 mt-4 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 focus:outline-none"
+          class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         >
           Search
         </button>
@@ -23,38 +39,14 @@
     </form>
     <!-- Pokemon Card -->
     <%= if @pokemon != nil do %>
-      <div>
-        <div class="flex flex-row justify-between items-center border-b border-gray-200 h-16">
-          <div class="flex flex-row justify-start items-center h-full">
-            <div class="ml-8 mt-2">
-              <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
-                <%= String.upcase(@pokemon.name) %>
-              </h5>
-            </div>
-            <div class="ml-4">
-              <span class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">
-                #<%= @pokemon.id %>
-              </span>
-            </div>
-          </div>
-          <div class="mr-8">
-            <img class="rounded-t-lg object-contain" src={@pokemon.sprite} alt="" />
-          </div>
-        </div>
-        <!-- Pokemon Stats -->
-        <ul id="stats" class="ml-10 mr-14 p-5">
-          <li
-            :for={{name, value} <- @pokemon.stats}
-            id={name}
-            class="flex flex-row justify-between"
-          >
-            <p class="font-semibold"><%= String.upcase(name) %>:</p>
-            <p class="ml-4"><%= value %></p>
-          </li>
-        </ul>
-      </div>
+      <Components.card
+        name={@pokemon.name}
+        url={@pokemon.sprite}
+        id={@pokemon.id}
+        stats={@pokemon.stats}
+      />
 
-      <div class="flex justify-center mt-2">
+      <div class="flex justify-center mt-4">
         <button
           phx-click="prev"
           type="button"
@@ -69,6 +61,23 @@
         >
           Next
         </button>
+      </div>
+
+      <div class="flex flex-col justify-center items-center mt-10">
+        <div class="flex flex-row justify-center mx-auto">
+          <%= if @search_time != nil do %>
+            <p class="font-semibold">Load time: <%= @search_time %> ms</p>
+          <% end %>
+        </div>
+
+        <label class="inline-flex items-center cursor-pointer mt-4">
+          <input type="checkbox" value=""  class="sr-only peer" phx-click="toggle_cache" checked={@cache_enabled} />
+          <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+          </div>
+          <div class="ms-3 text-sm font-medium text-black">
+            Cache system
+          </div>
+        </label>
       </div>
     <% else %>
       <div class="text-center mt-10">

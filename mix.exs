@@ -55,6 +55,7 @@ defmodule LiveDex.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:httpoison, "~> 2.0"},
+      {:cachex, "~> 3.3"},
       {:bandit, "~> 1.2"}
     ]
   end

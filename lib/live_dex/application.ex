@@ -3,11 +3,14 @@ defmodule LiveDex.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  @cache Application.compile_env(:live_dex, :cache_name)
+
   use Application
 
   @impl true
   def start(_type, _args) do
     children = [
+      {Cachex, name: @cache},
       LiveDexWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:live_dex, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: LiveDex.PubSub},

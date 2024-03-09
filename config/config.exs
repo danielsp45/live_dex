@@ -61,6 +61,8 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :live_dex, api_url: "https://pokeapi.co/api/v2/"
+config :live_dex, cache_name: :live_dex_cache
+config :live_dex, :cache_enabled, false
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
