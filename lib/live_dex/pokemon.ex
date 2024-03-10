@@ -10,39 +10,38 @@ defmodule LiveDex.Pokemon do
     if use_cache do
       get_pokemon_with_cache(param)
     else
-      fetch_pokemon(param, nil, false)
+      load_pokemon(param, 0, false)
     end
   end
 
   defp get_pokemon_with_cache(param) do
     case Cachex.get(:live_dex_cache, param) do
       {:ok, nil} ->
-        IO.puts("NOT IN CACHE")
-
-        case fetch_pokemon(param, 3600, true) do
+        # NOT IN CACHE
+        case load_pokemon(param, 3600, true) do
           {:ok, pokemon} ->
-            spawn(fn -> pre_fetch_pokemons(pokemon.id) end)
+            spawn(fn -> pre_load_pokemons(pokemon.id) end)
             {:ok, pokemon}
 
-          {:error, _} ->
-            IO.puts("ERROR")
-            {:error, "An error occurred"}
+          {:error, _error} ->
+            # ERROR
+            {:error, :load_error}
         end
 
       {:ok, pokemon} ->
-        IO.puts("IN CACHE")
-        spawn(fn -> pre_fetch_pokemons(pokemon.id) end)
+        # IN CACHE
+        spawn(fn -> pre_load_pokemons(pokemon.id) end)
         {:ok, pokemon}
 
       {:error, _} ->
-        IO.puts("ERROR")
-        {:error, "An error occurred"}
+        # ERROR
+        {:error, :cache_error}
     end
   end
 
-  @spec fetch_pokemon(String.t() | integer(), integer(), boolean()) ::
+  @spec load_pokemon(String.t() | integer(), integer(), boolean()) ::
           {:ok, %LiveDex.Pokemon{}} | {:error, String.t()}
-  def fetch_pokemon(param, ttl, use_cache) when is_binary(param) or is_integer(param) do
+  def load_pokemon(param, ttl, use_cache) when is_binary(param) or is_integer(param) do
     id_or_name =
       case param do
         id when is_integer(id) -> Integer.to_string(id)
@@ -58,6 +57,9 @@ defmodule LiveDex.Pokemon do
       else
         {:ok, pokemon}
       end
+    else
+      {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -71,13 +73,13 @@ defmodule LiveDex.Pokemon do
     end
   end
 
-  defp pre_fetch_pokemons(id) do
+  defp pre_load_pokemons(id) do
     if Cachex.get(@cache, id - 1) == {:ok, nil} do
-      fetch_pokemon(id - 1, 600, true)
+      load_pokemon(id - 1, 600, true)
     end
 
     if Cachex.get(@cache, id + 1) == {:ok, nil} do
-      fetch_pokemon(id + 1, 600, true)
+      load_pokemon(id + 1, 600, true)
     end
   end
 
