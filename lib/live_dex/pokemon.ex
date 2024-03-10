@@ -4,25 +4,23 @@ defmodule LiveDex.Pokemon do
   @api_url Application.compile_env(:live_dex, :api_url)
   @cache Application.compile_env(:live_dex, :cache_name)
 
-  @spec get_pokemon(String.t() | integer()) :: {:ok, %LiveDex.Pokemon{}} | {:error, String.t()}
-  def get_pokemon(param) do
-    case Application.get_env(:live_dex, :cache_enabled, true) do
-      true ->
-        case Cachex.get(:live_dex_cache, param) do
-          {:ok, nil} ->
-            IO.puts("NOT IN CACHE")
+  @spec get_pokemon(String.t() | integer(), boolean()) ::
+          {:ok, %LiveDex.Pokemon{}} | {:error, String.t()}
+  def get_pokemon(param, use_cache) do
+    if use_cache do
+      get_pokemon_with_cache(param)
+    else
+      fetch_pokemon(param, nil, false)
+    end
+  end
 
-            case fetch_pokemon(param, 3600) do
-              {:ok, pokemon} ->
-                spawn(fn -> pre_fetch_pokemons(pokemon.id) end)
-                {:ok, pokemon}
+  defp get_pokemon_with_cache(param) do
+    case Cachex.get(:live_dex_cache, param) do
+      {:ok, nil} ->
+        IO.puts("NOT IN CACHE")
 
-              {:error, reason} ->
-                {:error, reason}
-            end
-
+        case fetch_pokemon(param, 3600, true) do
           {:ok, pokemon} ->
-            IO.puts("IN CACHE")
             spawn(fn -> pre_fetch_pokemons(pokemon.id) end)
             {:ok, pokemon}
 
@@ -31,14 +29,20 @@ defmodule LiveDex.Pokemon do
             {:error, "An error occurred"}
         end
 
-      false ->
-        fetch_pokemon(param, 3600)
+      {:ok, pokemon} ->
+        IO.puts("IN CACHE")
+        spawn(fn -> pre_fetch_pokemons(pokemon.id) end)
+        {:ok, pokemon}
+
+      {:error, _} ->
+        IO.puts("ERROR")
+        {:error, "An error occurred"}
     end
   end
 
-  @spec fetch_pokemon(String.t() | integer(), integer()) ::
+  @spec fetch_pokemon(String.t() | integer(), integer(), boolean()) ::
           {:ok, %LiveDex.Pokemon{}} | {:error, String.t()}
-  def fetch_pokemon(param, ttl) when is_binary(param) or is_integer(param) do
+  def fetch_pokemon(param, ttl, use_cache) when is_binary(param) or is_integer(param) do
     id_or_name =
       case param do
         id when is_integer(id) -> Integer.to_string(id)
@@ -49,23 +53,32 @@ defmodule LiveDex.Pokemon do
 
     with {:ok, response} <- HTTPoison.get(url),
          {:ok, pokemon} <- extract_data(response) do
-      case Application.get_env(:live_dex, :cache_enabled, true) do
-        true ->
-          with {:ok, true} <- Cachex.put(@cache, param, pokemon) do
-            {:ok, pokemon}
-          else
-            {:error, reason} -> {:error, reason}
-          end
-
-        false ->
-          {:ok, pokemon}
+      if use_cache do
+        put_in_cache(param, pokemon, ttl)
+      else
+        {:ok, pokemon}
       end
     end
   end
 
+  @spec put_in_cache(String.t() | integer(), %LiveDex.Pokemon{}, integer()) ::
+          {:ok, %LiveDex.Pokemon{}} | {:error, term()}
+  defp put_in_cache(param, pokemon, ttl) do
+    with {:ok, true} <- Cachex.put(@cache, param, pokemon, ttl: ttl) do
+      {:ok, pokemon}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
   defp pre_fetch_pokemons(id) do
-    fetch_pokemon(id + 1, 300)
-    fetch_pokemon(id - 1, 300)
+    if Cachex.get(@cache, id - 1) == {:ok, nil} do
+      fetch_pokemon(id - 1, 600, true)
+    end
+
+    if Cachex.get(@cache, id + 1) == {:ok, nil} do
+      fetch_pokemon(id + 1, 600, true)
+    end
   end
 
   @spec extract_data(HTTPoison.Response.t()) :: {:ok, %LiveDex.Pokemon{}} | {:error, term()}

@@ -6,17 +6,14 @@ defmodule LiveDexWeb.HomeLive.Index do
 
   def mount(_params, _, socket) do
     start_time = :erlang.monotonic_time()
-    {:ok, pokemon} = Pokemon.get_pokemon("1")
+    {:ok, pokemon} = Pokemon.get_pokemon(1, true)
     end_time = :erlang.monotonic_time()
 
     {:ok,
      socket
      |> assign(:pokemon, pokemon)
      |> assign(:error, "")
-     |> assign(
-       :cache_enabled,
-       Application.get_env(:live_dex, :cache_enabled, true)
-     )
+     |> assign(:use_cache, true)
      |> assign(
        :search_time,
        :erlang.convert_time_unit(end_time - start_time, :native, :millisecond)
@@ -51,24 +48,18 @@ defmodule LiveDexWeb.HomeLive.Index do
   end
 
   def handle_event("toggle_cache", _params, socket) do
-    Application.put_env(
-      :live_dex,
-      :cache_enabled,
-      !Application.get_env(:live_dex, :cache_enabled, true)
-    )
-
     {:noreply,
      socket
      |> assign(
-       :cache_enabled,
-       Application.get_env(:live_dex, :cache_enabled, true)
+       :use_cache,
+       !socket.assigns.use_cache
      )}
   end
 
   defp get_pokemon(param, socket) do
     start_time = :erlang.monotonic_time()
 
-    with {:ok, pokemon} <- Pokemon.get_pokemon(param) do
+    with {:ok, pokemon} <- Pokemon.get_pokemon(param, socket.assigns.use_cache) do
       end_time = :erlang.monotonic_time()
 
       {:noreply,
