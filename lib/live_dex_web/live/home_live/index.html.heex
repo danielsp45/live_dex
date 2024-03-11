@@ -1,6 +1,6 @@
-<div class="mx-auto max-w-9xl px-4 sm:px-6 lg:px-8">
+<div class="mx-auto max-w-9xl px-4 sm:px-6 lg:px-8 mb-10">
   <div class="flex flex-col justify-center mt-10 mx-auto max-w-3xl">
-    <form class="mx-auto mt-4 w-full md:w-3/4" phx-submit="search">
+    <form class="mx-auto mt-4 w-full md:w-3/4" phx-submit="search" id="search">
       <label for="search" class="mb-2 text-sm font-medium text-gray-900 sr-only">
         Search
       </label>
@@ -27,7 +27,7 @@
           id="search"
           name="param"
           class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter Pokemon Name or ID"
+          placeholder="Enter Name or ID"
         />
         <button
           type="submit"
@@ -47,20 +47,8 @@
       />
 
       <div class="flex justify-center mt-4">
-        <button
-          phx-click="prev"
-          type="button"
-          class="py-2.5 px-5 me-2 mb-2 mr-10 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100"
-        >
-          Prev
-        </button>
-        <button
-          phx-click="next"
-          type="button"
-          class="py-2.5 px-5 me-2 mb-2 ml-10 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100"
-        >
-          Next
-        </button>
+        <Components.button placeholder="Prev" click="prev" />
+        <Components.button placeholder="Next" click="next" />
       </div>
 
       <div class="flex flex-col justify-center items-center mt-10">
@@ -70,20 +58,11 @@
           <% end %>
         </div>
 
-        <label class="inline-flex items-center cursor-pointer mt-4">
-          <input
-            type="checkbox"
-            value=""
-            class="sr-only peer"
-            phx-click="toggle_cache"
-            checked={@use_cache}
-          />
-          <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
-          </div>
-          <div class="ms-3 text-sm font-medium text-black">
-            Cache system
-          </div>
-        </label>
+        <Components.toggle_button
+          checked={@use_cache}
+          click="toggle_cache"
+          placeholder="Cache system"
+        />
       </div>
     <% else %>
       <div class="text-center mt-10">

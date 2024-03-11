@@ -6,7 +6,7 @@ defmodule LiveDexWeb.HomeLive.Index do
 
   def mount(_params, _, socket) do
     start_time = :erlang.monotonic_time()
-    {:ok, pokemon} = Pokemon.get_pokemon(1, true)
+    {:ok, pokemon} = Pokemon.get_pokemon(Enum.random(1..1025), true)
     end_time = :erlang.monotonic_time()
 
     {:ok,
