@@ -10,7 +10,7 @@ kill_signal = 'SIGTERM'
 [build]
 
 [env]
-  PHX_HOST = 'live-dex.fly.dev'
+  PHX_HOST = 'livedex.danielpereira.xyz'
   PORT = '8080'
 
 [http_service]
